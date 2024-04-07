@@ -52,6 +52,15 @@ async function createUser(name, email, password) {
   // Hash password
   const hashedPassword = await hashPassword(password);
 
+  /**
+   * Cek email apakah sudah dipakai atau belum
+   * @param {string} email
+   * @returns {boolean}
+   */
+  async function emailChecker(email) {
+    return await usersRepository.emailChecker(email);
+  }
+
   try {
     await usersRepository.createUser(name, email, hashedPassword);
   } catch (err) {
@@ -113,4 +122,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  emailChecker,
 };
