@@ -51,6 +51,14 @@ async function createUser(request, response, next) {
     const email = request.body.email;
     const password = request.body.password;
 
+    const emailChecker = await usersService.emailChecker(email);
+    if (emailTaken) {
+      throw errorResponder(
+        errorTypes.DB_NOTNULL_CONFLICT,
+        'Email already taken'
+      );
+    }
+
     const success = await usersService.createUser(name, email, password);
     if (!success) {
       throw errorResponder(
