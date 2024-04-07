@@ -42,6 +42,15 @@ async function getUser(id) {
 }
 
 /**
+ * Cek email apakah sudah dipakai atau belum
+ * @param {string} email
+ * @returns {boolean}
+ */
+async function emailChecker(email) {
+  return await usersRepository.emailChecker(email);
+}
+
+/**
  * Create new user
  * @param {string} name - Name
  * @param {string} email - Email
@@ -51,15 +60,6 @@ async function getUser(id) {
 async function createUser(name, email, password) {
   // Hash password
   const hashedPassword = await hashPassword(password);
-
-  /**
-   * Cek email apakah sudah dipakai atau belum
-   * @param {string} email
-   * @returns {boolean}
-   */
-  async function emailChecker(email) {
-    return await usersRepository.emailChecker(email);
-  }
 
   try {
     await usersRepository.createUser(name, email, hashedPassword);
