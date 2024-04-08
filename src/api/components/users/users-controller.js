@@ -50,6 +50,15 @@ async function createUser(request, response, next) {
     const name = request.body.name;
     const email = request.body.email;
     const password = request.body.password;
+    const confirmPassword = request.body.password_confirm;
+
+    //melakuka pengecekan antara password dan confirmPassword
+    if (password !== confirmPassword) {
+      throw errorResponder(
+        errorTypes.INVALID_PASSWORD,
+        'Password and Confirm Password do not match'
+      );
+    }
 
     const emailTaken = await usersService.emailChecker(email);
     if (emailTaken) {
