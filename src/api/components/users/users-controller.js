@@ -50,7 +50,7 @@ async function createUser(request, response, next) {
     const name = request.body.name;
     const email = request.body.email;
     const password = request.body.password;
-    const confirmPassword = request.body.password_confirm;
+    const confirmPassword = request.body.confirmPassword;
 
     //melakuka pengecekan antara password dan confirmPassword
     if (password !== confirmPassword) {

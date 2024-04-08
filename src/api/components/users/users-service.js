@@ -55,9 +55,10 @@ async function emailChecker(email) {
  * @param {string} name - Name
  * @param {string} email - Email
  * @param {string} password - Password
+ * @param {string} confirmPassword - Confirm Password
  * @returns {boolean}
  */
-async function createUser(name, email, password) {
+async function createUser(name, email, password, confirmPassword) {
   // Hash password
   const hashedPassword = await hashPassword(password);
 
