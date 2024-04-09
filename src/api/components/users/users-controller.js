@@ -1,5 +1,6 @@
 const usersService = require('./users-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
+const { verifyPassword } = require('../../../utils/password');
 
 /**
  * Handle get list of users request
@@ -134,10 +135,60 @@ async function deleteUser(request, response, next) {
   }
 }
 
+/**
+ * Handle Change Password Request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @return {object} Response object or pass an error to the next route
+ */
+async function changePassword(request, response, next) {
+  try {
+    const userId = request.params.id;
+    const { oldPassword, newPassword, confirmPassword } = request.body;
+
+    // check apakah newPassword sama confirmPassword
+    if (newPassword !== confirmPassword) {
+      throw errorResponder(
+        errorTypes.INVALID_PASSWORD,
+        'New Password and Confirm Password Do Not Match!'
+      );
+    }
+
+    // check apakah oldPassword sama dengan password sekarang
+    const user = await usersService.getUser(userID);
+    if (!user) {
+      throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'User Not Found!');
+    }
+
+    const isPasswordTrue = await verifyPassword(oldPassword, user.password);
+    if (isPasswordTrue) {
+      throw errorResponder(
+        errorTypes.INVALID_PASSWORD,
+        'Old Password is Incorrect!'
+      );
+    }
+
+    // Update Password
+    const success = await usersService.changePassword(userId, newPassword);
+    if (!success) {
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'Failed to Change Password!'
+      );
+    }
+
+    return response.status(200).json({ id });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   getUsers,
   getUser,
   createUser,
   updateUser,
   deleteUser,
+  changePassword,
 };
