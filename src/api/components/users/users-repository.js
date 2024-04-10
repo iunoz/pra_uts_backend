@@ -73,6 +73,31 @@ async function emailChecker(email) {
   return !!user;
 }
 
+/**
+ * Update user password
+ * @param {string} id - User ID
+ * @param {string} newPassword - New Password
+ * @returns {Promise<boolean>}
+ */
+async function updatePassword(id, newPassword) {
+  try {
+    await User.updateOne(
+      {
+        _id: id,
+      },
+      {
+        $set: {
+          password: newPassword,
+        },
+      }
+    );
+    return true;
+  } catch (error) {
+    console.error('Error updating password:', error);
+    return false;
+  }
+}
+
 module.exports = {
   getUsers,
   getUser,
@@ -80,4 +105,5 @@ module.exports = {
   updateUser,
   deleteUser,
   emailChecker,
+  updatePassword,
 };

@@ -1,6 +1,5 @@
 const usersService = require('./users-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
-const { verifyPassword } = require('../../../utils/password');
 
 /**
  * Handle get list of users request
@@ -144,8 +143,10 @@ async function deleteUser(request, response, next) {
  */
 async function changePassword(request, response, next) {
   try {
-    const userId = request.params.id;
-    const { oldPassword, newPassword, confirmPassword } = request.body;
+    const id = request.params.id;
+    const oldPassword = request.body.oldPassword;
+    const newPassword = request.body.newPassword;
+    const confirmPassword = request.body.confirmPassword;
 
     // check apakah newPassword sama confirmPassword
     if (newPassword !== confirmPassword) {
@@ -156,12 +157,15 @@ async function changePassword(request, response, next) {
     }
 
     // check apakah oldPassword sama dengan password sekarang
-    const user = await usersService.getUser(userID);
+    const user = await usersService.getUser(id);
     if (!user) {
       throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'User Not Found!');
     }
 
-    const isPasswordTrue = await verifyPassword(oldPassword, user.password);
+    const isPasswordTrue = await usersService.comparePassword(
+      oldPassword,
+      user.password
+    );
     if (isPasswordTrue) {
       throw errorResponder(
         errorTypes.INVALID_PASSWORD,
@@ -170,7 +174,7 @@ async function changePassword(request, response, next) {
     }
 
     // Update Password
-    const success = await usersService.changePassword(userId, newPassword);
+    const success = await usersService.changePassword(id, newPassword);
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -178,7 +182,9 @@ async function changePassword(request, response, next) {
       );
     }
 
-    return response.status(200).json({ id });
+    return response
+      .status(200)
+      .json({ message: 'Password changed successfully!' });
   } catch (error) {
     return next(error);
   }
