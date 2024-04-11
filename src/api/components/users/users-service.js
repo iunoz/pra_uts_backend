@@ -1,5 +1,6 @@
 const usersRepository = require('./users-repository');
 const { hashPassword, passwordMatched } = require('../../../utils/password');
+const { errorResponder, errorTypes } = require('../../../core/errors');
 
 /**
  * Get list of users
@@ -118,25 +119,31 @@ async function deleteUser(id) {
 }
 
 /**
- * Compare password dengan hashed password
- * @param {string} password - Password
- * @param {string} hashedPassword - Hashed Password
- * @returns {boolean}
- */
-async function comparePassword(password, hashedPassword) {
-  return passwordMatched(password, hashedPassword);
-}
-
-/**
  * Change user password
- * @param {string} id - Uer ID
+ * @param {string} id - User ID
+ * @param {string} oldPassword - Old Password
  * @param {string} newPassword - New Password
  * @returns {boolean}
  */
-async function changePassword(id, newPassword) {
+async function changePassword(id, oldPassword, newPassword) {
+  //Check User
+  const user = await usersRepository.getUser(id);
+  if (!user) {
+    throw errorResponder(errorTypes.NPROCESSABLE_ENTITY, 'User Not Found1');
+  }
+
+  //Matching password
+  const passwordMatching = await passwordMatched(oldPassword, user.password);
+  if (!passwordMatching) {
+    throw errorResponder(
+      errorTypes.INVALID_PASSWORD,
+      'Old Password is Incorrect!'
+    );
+  }
+
   //hash new password
-  const hashedPassword = await hashPassword(newPassword);
-  return usersRepository.updatePassword(id, hashedPassword);
+  const hashedNewPassword = await hashPassword(newPassword);
+  return usersRepository.updatePassword(id, hashedNewPassword);
 }
 
 module.exports = {
@@ -146,6 +153,5 @@ module.exports = {
   updateUser,
   deleteUser,
   emailChecker,
-  comparePassword,
   changePassword,
 };

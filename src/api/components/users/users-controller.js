@@ -146,35 +146,22 @@ async function changePassword(request, response, next) {
     const id = request.params.id;
     const oldPassword = request.body.oldPassword;
     const newPassword = request.body.newPassword;
-    const confirmPassword = request.body.confirmPassword;
+    const confirmNewPassword = request.body.confirmNewPassword;
 
     // check apakah newPassword sama confirmPassword
-    if (newPassword !== confirmPassword) {
+    if (newPassword !== confirmNewPassword) {
       throw errorResponder(
         errorTypes.INVALID_PASSWORD,
         'New Password and Confirm Password Do Not Match!'
       );
     }
 
-    // check apakah oldPassword sama dengan password sekarang
-    const user = await usersService.getUser(id);
-    if (!user) {
-      throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'User Not Found!');
-    }
-
-    const isPasswordTrue = await usersService.comparePassword(
-      oldPassword,
-      user.password
-    );
-    if (isPasswordTrue) {
-      throw errorResponder(
-        errorTypes.INVALID_PASSWORD,
-        'Old Password is Incorrect!'
-      );
-    }
-
     // Update Password
-    const success = await usersService.changePassword(id, newPassword);
+    const success = await usersService.changePassword(
+      id,
+      oldPassword,
+      newPassword
+    );
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
